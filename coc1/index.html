@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grid with Image Buttons</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/webp" href="img/logo.png">
+</head>
+<body>
+    <div id="header">
+        <img src="img/logo.webp" alt="Logo" id="logo">
+        <img src="img/theme.webp" alt="theme" id="theme">
+    </div>
+<div id="container">
+    <div class="image-button-container-troops" id="troop-buttons">
+        <button class="image-button" id="eagle-artillery" data-image-src="img/Town_Hall.webp" data-image-alt="Eagle artillery" data-area-size="4">
+            <img src="img/Town_Hall.webp" alt="agle artillery" width="90" height="90">
+        </button>  		
+		
+		<button class="image-button" id="Scattershot" data-image-src="img/Scattershot.webp" data-image-alt="Scattershot" data-area-size="3">
+            <img src="img/Scattershot.webp" alt="Scattershot" width="90" height="90">
+        </button>		
+		
+		<button class="image-button" id="Multi-Archer_Tower" data-image-src="img/Multi-Archer_Tower.webp" data-image-alt="Multi-Archer_Tower" data-area-size="3">
+            <img src="img/Multi-Archer_Tower.webp" alt="Multi-Archer_Tower" width="90" height="90">
+        </button>
+		
+		<button class="image-button" id="Ricochet_Cannon" data-image-src="img/Ricochet_Cannon.webp" data-image-alt="Ricochet_Cannon" data-area-size="3">
+            <img src="img/Ricochet_Cannon.webp" alt="Ricochet_Cannon" width="90" height="90">
+        </button>
+
+		<button class="image-button" id="Wizard_Tower" data-image-src="img/Wizard_Tower.webp" data-image-alt="Wizard_Tower" data-area-size="3">
+            <img src="img/Wizard_Tower.webp" alt="Wizard_Tower" width="90" height="90">
+        </button>
+
+		<button class="image-button" id="Bomb_Tower" data-image-src="img/Bomb_Tower.webp" data-image-alt="Bomb_Tower" data-area-size="3">
+            <img src="img/Bomb_Tower.webp" alt="Bomb_Tower" width="90" height="90">
+        </button>
+
+		<button class="image-button" id="Monolith" data-image-src="img/Monolith.webp" data-image-alt="Monolith" data-area-size="3">
+            <img src="img/Monolith.webp" alt="Monolith" width="90" height="90">
+        </button>
+		
+		<button class="image-button" id="Spell_Tower" data-image-src="img/Spell_Tower.webp" data-image-alt="Spell_Tower" data-area-size="2">
+            <img src="img/Spell_Tower.webp" alt="Spell_Tower" width="90" height="90">
+        </button>
+
+		<button class="image-button" id="Air_Sweeper" data-image-src="img/Air_Sweeper.webp" data-image-alt="Air_Sweeper" data-area-size="2">
+            <img src="img/Air_Sweeper.webp" alt="Air_Sweeper" width="90" height="90">
+        </button>	   
+
+	   <button class="image-button" id="Mortar" data-image-src="img/Mortar.webp" data-image-alt="Mortar" data-area-size="3">
+            <img src="img/Mortar.webp" alt="Mortar" width="90" height="90">
+        </button>
+		
+		<button class="image-button" id="Builders_Hut" data-image-src="img/Builders_Hut.webp" data-image-alt="Builders_Hut" data-area-size="2">
+            <img src="img/Builders_Hut.webp" alt="Builders_Hut" width="90" height="90">
+        </button>
+
+        <button class="image-button" id="x-bow-button" data-image-src="img/X-Bow.webp" data-image-alt="X-Bow" data-area-size="3">
+            <img src="img/X-Bow.webp" alt="X-Bow" width="90" height="90">
+        </button>
+	
+        <button class="image-button" id="Air_Defense" data-image-src="img/Air_Defense.webp" data-image-alt="Air_Defense" data-area-size="3">
+            <img src="img/Air_Defense.webp" alt="Air_Defense" width="90" height="90">
+        </button>
+
+        <button class="image-button" id="archer-tower-button" data-image-src="img/ArcherTower.webp" data-image-alt="Archer Tower" data-area-size="3">
+            <img src="img/ArcherTower.webp" alt="Archer Tower" width="90" height="90">
+        </button>
+
+        <button class="image-button" id="cannon-button" data-image-src="img/Cannon.webp" data-image-alt="Cannon" data-area-size="3">
+            <img src="img/Cannon.webp" alt="Cannon" width="90" height="90">
+        </button>
+        
+        <button class="image-button" id="eagle-artillery" data-image-src="img/Eagle_Artillery.webp" data-image-alt="Eagle artillery" data-area-size="4">
+            <img src="img/Eagle_Artillery.webp" alt="agle artillery" width="90" height="90">
+        </button>   
+
+        <button class="image-button" id="inferno-tower" data-image-src="img/Inferno_Tower.webp" data-image-alt="Inferno tower" data-area-size="2">
+            <img src="img/Inferno_Tower.webp" alt="Inferno tower" width="90" height="90">
+        </button>
+
+        <button class="image-button" id="wall" data-image-src="img/wall.webp" data-image-alt="wall" data-area-size="1">
+            <img src="img/wall.webp" alt="wall" width="90" height="90">
+        </button>       
+    </div>
+    <div id="grid-container"></div>
+    <div class="image-button-container-tools" id="tool-buttons">
+        <button class="image-button" id="remove-button">
+            <img src="img/remove.webp" alt="Remove" width="90" height="90">
+        </button>
+
+        <button class="image-button" id="clear-button">
+            <img src="img/clear.webp" alt="Clear" width="90" height="90">
+        </button>
+
+        <button class="image-button" id="move-button">
+            <img src="img/move.webp" alt="Move" width="90" height="90">
+        </button>
+
+        <button class="image-button" id="earthquake-button">
+            <img src="img/Earthquake_Spell.webp" alt="Earthquake Spell" width="90" height="90">
+        </button>
+		   
+		   <div class="styled-select">
+        <select id="earthquake-level">
+            <option value="1">Level 1</option>
+            <option value="2">Level 2</option>
+            <option value="3">Level 3</option>
+            <option value="4">Level 4</option>
+            <option value="5">Level 5</option>
+        </select>
+		    </div>
+		
+		<button class="image-button" id="lightning-button">
+            <img src="img/Lightning_Spell.webp" alt="Lightning Spell" width="90" height="90">
+		</button>
+		
+		<button class="image-button" id="Giant_Arrow">
+            <img src="img/Giant_Arrow.webp" alt="Lightning Spell" width="90" height="90">
+        </button>
+    </div>
+	<svg id="lineContainer" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+    <line id="connectorLine" stroke="rgba(255, 192, 203, 0.5)" stroke-width="2" />
+	<line id="sideLine1" stroke="rgba(255, 192, 203, 0.5)" />
+	<line id="sideLine2" stroke="rgba(255, 192, 203, 0.5)" />
+</svg>
+    </div>
+</div>
+
+
+<script src="js/main.js" type="module"></script>
+
+
+</body>
+</html>

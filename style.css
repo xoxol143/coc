@@ -14,26 +14,39 @@ body {
     justify-content: center;
     height: 100px;
     width: 100%;
-    /* If you want some space above the logo, adjust this value. */
     padding-top: 0;
     align-items: center;
     background: #10110A;
 }
 
 #logo {
-    /* Adjust the height as per your logo's aspect ratio */
     height: 100px; 
     position: absolute;
-    left: 0; /* Aligning with the grid container based on your grid's setup */
+    left: 0;
+}
+
+#feedback-link {
+    position: absolute;
+    right: 80px;
+    cursor: pointer;
+    display: inline-block; /* or block depending on your layout */
+    background: #ffffff; 
+    padding: 5px; 
+}
+
+#feedback {
+    height: 50px; /* maintains the image height */
+    display: block; /* to remove bottom space under the image */
+    background: none; /* in case you don't want the background on the image itself */
 }
 
 #theme {
-    /* Adjust the height as per your logo's aspect ratio */
     height: 50px; 
     position: absolute;
     right: 10px;
     background: #ffffff;
     cursor: pointer;
+    padding: 5px;
 }
 
 #container {
@@ -84,6 +97,9 @@ body {
     align-items: center;
     margin-left: 20px;
     margin-right: 20px;
+    flex-wrap: wrap;
+    max-height: calc(125px * 6);
+    width: 220px;
 }
 
 

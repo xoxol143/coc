@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
     let isMoveMode = false;
     let areaSize = null;
     let isEarthquakeMode = false;
-    let isLightningMode = false; // New variable for lightning mode
+    let isLightningMode = false;
+    let isFreezeMode = false;
+    let isOvergrowthMode = false;
     let circle1;
     let circle2;
 
@@ -147,435 +149,462 @@ document.addEventListener("DOMContentLoaded", function () {
         isMoveMode = !isMoveMode;
     }
 
-function selectButton(event) {
-const button = event.currentTarget;
-const isSelected = button.classList.contains('selected');
+    function selectButton(event) {
+    const button = event.currentTarget;
+    const isSelected = button.classList.contains('selected');
 
-document.querySelectorAll('.image-button').forEach(btn => {
-    btn.classList.remove('selected');
-});
+    document.querySelectorAll('.image-button').forEach(btn => {
+        btn.classList.remove('selected');
+    });
 
-if (!isSelected) {
-    button.classList.add('selected');
-    selectedButton = button;
+        if (!isSelected) {
+            button.classList.add('selected');
+            selectedButton = button;
 
-    if (selectedButton.id === 'move-button') {
-        isMoveMode = true;
-    } else {
-        isMoveMode = false;
-    }
-
-    if (selectedButton.id === 'earthquake-button') {
-        isEarthquakeMode = true;
-        gridContainer.addEventListener('mousemove', showEarthquakeCircle);
-    } else {
-        isEarthquakeMode = false;
-        gridContainer.removeEventListener('mousemove', showEarthquakeCircle);
-        clearEarthquakeCircle();
-    }
-
-    if (selectedButton.id === 'lightning-button') { // Check if lightning button is selected
-        isLightningMode = true;
-        gridContainer.addEventListener('mousemove', showLightningHighlight); // Add event listener for lightning mode
-    } else {
-        isLightningMode = false;
-        clearLightningHighlight(); // Clear lightning highlight if another button is selected
-        gridContainer.removeEventListener('mousemove', showLightningHighlight); // Remove event listener for lightning mode
-    }
-
-    if (selectedButton.id === 'Giant_Arrow') { // Check if Giant Arrow button is selected
-        showGiantArrow(); // Add event listener for showing giant arrow
-    } else {
-        clearGiantArrow(); // Clear existing circles and lines
-    }
-} else {
-    selectedButton = null;
-
-    if (button.id === 'move-button') {
-        isMoveMode = false;
-    }
-
-    if (button.id === 'earthquake-button') {
-        isEarthquakeMode = false;
-        gridContainer.removeEventListener('mousemove', showEarthquakeCircle);
-        clearEarthquakeCircle();
-    }
-
-    if (button.id === 'lightning-button') {
-        isLightningMode = false;
-        clearLightningHighlight(); // Clear lightning highlight if the button is deselected
-        gridContainer.removeEventListener('mousemove', showLightningHighlight); // Remove event listener for lightning mode
-    }
-
-    if (button.id === 'Giant_Arrow') {
-        clearGiantArrow(); // Clear existing circles and lines
-    }
-}
-}
-
-function showGiantArrow() {
-clearGiantArrow(); // Clear existing circles if any
-
-circle1 = createCircle(-1, -1); // Top left corner
-circle2 = createCircle(gridContainer.offsetWidth - 29, gridContainer.offsetHeight - 29); // Bottom right corner
-
-gridContainer.appendChild(circle1);
-gridContainer.appendChild(circle2);
-
-// Make circles draggable
-makeDraggable(circle1);
-makeDraggable(circle2);
-
-// Initial draw of the line
-drawLine(circle1, circle2);
-}
-
-function createCircle(left, top) {
-const circle = document.createElement('div');
-circle.classList.add('giant-arrow-circle');
-circle.style.width = '30px';
-circle.style.height = '30px';
-circle.style.borderRadius = '50%';
-circle.style.position = 'absolute';
-circle.style.left = `${left}px`;
-circle.style.top = `${top}px`;
-circle.style.backgroundColor = 'blue'; // Set your desired circle color
-circle.style.cursor = 'move';
-return circle;
-}
-
-function drawLine(circle1, circle2) {
-const svg = document.getElementById('lineContainer');
-const mainLine = document.getElementById('connectorLine'); // This is your main visible line
-// Create side lines for computational purposes but make them invisible
-const sideLine1 = document.getElementById('sideLine1');
-const sideLine2 = document.getElementById('sideLine2');
-
-svg.appendChild(sideLine1);
-svg.appendChild(sideLine2);
-
-// Calculate centers of the circles
-const rect1 = circle1.getBoundingClientRect();
-const rect2 = circle2.getBoundingClientRect();
-const x1 = rect1.left + rect1.width / 2 - svg.getBoundingClientRect().left;
-const y1 = rect1.top + rect1.height / 2 - svg.getBoundingClientRect().top;
-const x2 = rect2.left + rect2.width / 2 - svg.getBoundingClientRect().left;
-const y2 = rect2.top + rect2.height / 2 - svg.getBoundingClientRect().top;
-
-// Set coordinates for the main line
-mainLine.setAttribute('x1', x1);
-mainLine.setAttribute('y1', y1);
-mainLine.setAttribute('x2', x2);
-mainLine.setAttribute('y2', y2);
-
-// Set the line's width to the diameter of the circles
-const diameter = rect1.width; // Assuming both circles have the same size
-mainLine.setAttribute('stroke-width', diameter);
-
-// Calculate offset for side lines based on the line width
-const lineWidth = 30; // Width of your arrow line
-const angle = Math.atan2(y2 - y1, x2 - x1);
-const offsetX = Math.sin(angle) * lineWidth / 2;
-const offsetY = Math.cos(angle) * lineWidth / 2;
-
-// Set coordinates for side lines (tangent to the main line and invisible)
-sideLine1.setAttribute('x1', x1 + offsetX);
-sideLine1.setAttribute('y1', y1 - offsetY);
-sideLine1.setAttribute('x2', x2 + offsetX);
-sideLine1.setAttribute('y2', y2 - offsetY);
-sideLine1.setAttribute('stroke-opacity', '0');
-
-sideLine2.setAttribute('x1', x1 - offsetX);
-sideLine2.setAttribute('y1', y1 + offsetY);
-sideLine2.setAttribute('x2', x2 - offsetX);
-sideLine2.setAttribute('y2', y2 + offsetY);
-sideLine2.setAttribute('stroke-opacity', '0');
-
-// Use the side lines for intersection checks
-highlightCellsIntersectingWithLine(mainLine);
-highlightCellsIntersectingWithLine(sideLine1);
-highlightCellsIntersectingWithLine(sideLine2);
-updateIntersectedCells();
-}
-
-
-function clearGiantArrow() {
-// Remove circles
-const existingCircles = gridContainer.querySelectorAll('.giant-arrow-circle');
-existingCircles.forEach(circle => {
-    gridContainer.removeChild(circle);
-});
-
-// Clear line by resetting its attributes
-const line = document.getElementById('connectorLine');
-if (line) {
-    line.setAttribute('x1', '0');
-    line.setAttribute('y1', '0');
-    line.setAttribute('x2', '0');
-    line.setAttribute('y2', '0');
-}
-
-const squares = document.querySelectorAll('.square');
-squares.forEach(square => {
-        if (square.style.backgroundColor === 'rgba(255, 0, 0, 0.75)') {
-            square.style.backgroundColor = 'rgb(255, 255, 125)';
-        }
-});
-}
-
-function makeDraggable(element) {
-element.addEventListener('mousedown', function(event) {
-    event.preventDefault(); // Prevent default text selection
-
-    // Calculate initial offsets within the element
-    const initialOffsetX = event.clientX - element.getBoundingClientRect().left;
-    const initialOffsetY = event.clientY - element.getBoundingClientRect().top;
-
-    // Function to handle moving the element
-const moveElement = (moveEvent) => {
-const gridRect = gridContainer.getBoundingClientRect(); // Get the bounding rect of the grid container
-
-// Calculate new positions, adjusted for the grid container's offset
-let newX = moveEvent.clientX - initialOffsetX - gridRect.left + window.scrollX; // Add scrollX for horizontal scrolling
-let newY = moveEvent.clientY - initialOffsetY - gridRect.top + window.scrollY; // Add scrollY for vertical scrolling
-
-// Ensure newX and newY are within the grid boundaries
-// Limit newX to be between 0 and the width of the grid minus the width of the element
-newX = Math.max(-1, Math.min(newX, gridRect.width - element.offsetWidth + 1));
-// Limit newY to be between 0 and the height of the grid minus the height of the element
-newY = Math.max(-1, Math.min(newY, gridRect.height - element.offsetHeight + 1));
-
-// Update the element's position
-element.style.left = `${newX}px`;
-element.style.top = `${newY}px`;
-
-if (circle1 && circle2) {
-    drawLine(circle1, circle2);
-}
-};
-
-
-    // Attach move event listener
-    document.addEventListener('mousemove', moveElement);
-
-    // Function to cleanup and remove event listeners
-    const stopDrag = () => {
-        document.removeEventListener('mousemove', moveElement);
-        document.removeEventListener('mouseup', stopDrag);
-    };
-
-    // Attach event listener for mouseup to stop the drag
-    document.addEventListener('mouseup', stopDrag);
-});
-
-// Prevent the default drag-and-drop behavior
-element.ondragstart = () => false;
-}
-
-function highlightCellsIntersectingWithLine(line) {
-const grid = document.getElementById('grid-container');
-const gridRect = grid.getBoundingClientRect();
-const x1 = parseFloat(line.getAttribute('x1'));
-const y1 = parseFloat(line.getAttribute('y1'));
-const x2 = parseFloat(line.getAttribute('x2'));
-const y2 = parseFloat(line.getAttribute('y2'));
-const isVertical = (x1 === x2);
-
-let m, b; // Slope and y-intercept of the line
-if (!isVertical) {
-    m = (y2 - y1) / (x2 - x1);
-    b = y1 - m * x1;
-}
-
-// Check each occupied cell for intersection
-occupiedCells.forEach(cell => {
-    const cellIndex = cell.y * 25 + cell.x; // Assuming 25 columns
-    const cellElement = document.querySelector(`#grid-container .square:nth-child(${cellIndex + 1})`);
-
-    if (cellElement) {
-        const cellRect = cellElement.getBoundingClientRect();
-        const cellX = cellRect.left - gridRect.left;
-        const cellY = cellRect.top - gridRect.top;
-
-        // Calculate the cell's corner positions
-        const topLeft = { x: cellX, y: cellY };
-        const bottomRight = { x: cellX + 30, y: cellY + 30 }; // Assuming cell size of 30px
-
-        let intersects = false;
-
-        if (isVertical) {
-            // Check if the vertical line's x-coordinate is within the cell's x-range
-            if (x1 >= topLeft.x && x1 <= bottomRight.x) {
-                // Check if any part of the vertical line's y-range intersects with the cell's y-range
-                const lineTop = Math.min(y1, y2); // Line's topmost y-coordinate
-                const lineBottom = Math.max(y1, y2); // Line's bottommost y-coordinate
-                intersects = lineBottom >= topLeft.y && lineTop <= bottomRight.y;
+            if (selectedButton.id === 'move-button') {
+                isMoveMode = true;
+            } else {
+                isMoveMode = false;
             }
+
+            if (selectedButton.id === 'earthquake-button') {
+                isEarthquakeMode = true;
+                gridContainer.addEventListener('mousemove', showEarthquakeCircle);
+            } else {
+                isEarthquakeMode = false;
+                gridContainer.removeEventListener('mousemove', showEarthquakeCircle);
+                clearEarthquakeCircle();
+            }
+
+            if (selectedButton.id === 'lightning-button') { // Check if lightning button is selected
+                isLightningMode = true;
+                gridContainer.addEventListener('mousemove', showLightningHighlight); // Add event listener for lightning mode
+            } else {
+                isLightningMode = false;
+                clearLightningHighlight(); // Clear lightning highlight if another button is selected
+                gridContainer.removeEventListener('mousemove', showLightningHighlight); // Remove event listener for lightning mode
+            }
+
+            if (selectedButton.id === 'Giant_Arrow-button') { // Check if Giant Arrow button is selected
+                showGiantArrow(); // Add event listener for showing giant arrow
+            } else {
+                clearGiantArrow(); // Clear existing circles and lines
+            }
+
+// Set the mode based on which button was clicked, without immediately adding or removing event listeners
+if (selectedButton.id === 'Overgrowth-button') {
+    isOvergrowthMode = true;
+    isFreezeMode = false; // Ensure that Freeze mode is disabled when Overgrowth is enabled
+} else if (selectedButton.id === 'Freeze-button') {
+    isFreezeMode = true;
+    isOvergrowthMode = false; // Ensure that Overgrowth mode is disabled when Freeze is enabled
+} else {
+    isFreezeMode = false;
+    isOvergrowthMode = false;
+}
+
+// Add or remove the event listener based on the mode flags
+if (isOvergrowthMode || isFreezeMode) {
+    gridContainer.addEventListener('mousemove', showCenterSpellCircle);
+} else {
+    gridContainer.removeEventListener('mousemove', showCenterSpellCircle);
+    clearCenterSpellCircle(); // This call might need to be conditional based on the active mode
+}
+
+
         } else {
-            // Non-vertical line intersection checks
-            intersects = checkLineIntersection(x1, y1, x2, y2, topLeft.x, topLeft.y, bottomRight.x, topLeft.y) ||
-                         checkLineIntersection(x1, y1, x2, y2, bottomRight.x, topLeft.y, bottomRight.x, bottomRight.y) ||
-                         checkLineIntersection(x1, y1, x2, y2, bottomRight.x, bottomRight.y, topLeft.x, bottomRight.y) ||
-                         checkLineIntersection(x1, y1, x2, y2, topLeft.x, bottomRight.y, topLeft.x, topLeft.y);
-        }
+            selectedButton = null;
 
-        if (intersects) {
-            intersectedCells.add(cellIndex); // Add the cell index to the intersectedCells collection
+            if (button.id === 'move-button') {
+                isMoveMode = false;
+            }
+
+            if (button.id === 'earthquake-button') {
+                isEarthquakeMode = false;
+                gridContainer.removeEventListener('mousemove', showEarthquakeCircle);
+                clearEarthquakeCircle();
+            }
+
+            if (isOvergrowthMode || isFreezeMode) {
+                gridContainer.removeEventListener('mousemove', showCenterSpellCircle);
+                clearCenterSpellCircle(); // This call might need to be conditional based on the active mode
+                isFreezeMode = false;
+                isOvergrowthMode = false;
+            }
+
+            if (button.id === 'lightning-button') {
+                isLightningMode = false;
+                clearLightningHighlight(); // Clear lightning highlight if the button is deselected
+                gridContainer.removeEventListener('mousemove', showLightningHighlight); // Remove event listener for lightning mode
+            }
+
+            if (button.id === 'Giant_Arrow-button') {
+                clearGiantArrow(); // Clear existing circles and lines
+            }
         }
     }
-});
-}
 
+    function showGiantArrow() {
+    clearGiantArrow(); // Clear existing circles if any
 
+    circle1 = createCircle(-1, -1); // Top left corner
+    circle2 = createCircle(gridContainer.offsetWidth - 29, gridContainer.offsetHeight - 29); // Bottom right corner
 
-// Helper function to check if two line segments intersect
-function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
-// Calculate the direction of the lines
-const uA = ((line2EndX - line2StartX) * (line1StartY - line2StartY) - (line2EndY - line2StartY) * (line1StartX - line2StartX)) / ((line2EndY - line2StartY) * (line1EndX - line1StartX) - (line2EndX - line2StartX) * (line1EndY - line1StartY));
-const uB = ((line1EndX - line1StartX) * (line1StartY - line2StartY) - (line1EndY - line1StartY) * (line1StartX - line2StartX)) / ((line2EndY - line2StartY) * (line1EndX - line1StartX) - (line2EndX - line2StartX) * (line1EndY - line1StartY));
+    gridContainer.appendChild(circle1);
+    gridContainer.appendChild(circle2);
 
-// If uA and uB are between 0-1, lines are colliding
-return uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1;
-}
+    // Make circles draggable
+    makeDraggable(circle1);
+    makeDraggable(circle2);
 
-
-// After all lines have been checked, update the cell colors
-function updateIntersectedCells() {
-const cells = document.querySelectorAll('#grid-container .square');
-
-// Iterate through all occupied cells
-occupiedCells.forEach(oc => {
-    const index = oc.y * 25 + oc.x; // Calculate cell index based on its x and y coordinates
-    const cell = cells[index];
-
-    // If this occupied cell is not in the set of currently intersected cells, revert its color
-    if (!intersectedCells.has(index)) {
-        cell.style.backgroundColor = 'rgb(255, 255, 125)';
+    // Initial draw of the line
+    drawLine(circle1, circle2);
     }
-});
 
-// Iterate through all intersected cells to update their color
-intersectedCells.forEach(index => {
-    const cell = cells[index];
-    cell.style.backgroundColor = 'rgba(255, 0, 0, 0.75)';
-});
-
-// Clear the set for future updates
-intersectedCells.clear();
-}
-
-function showEarthquakeCircle(event) {
-    const levelSelect = document.getElementById('earthquake-level');
-    const level = parseInt(levelSelect.value);
-
-    const levelToMultiplier = {
-        1: 3.5,
-        2: 3.8,
-        3: 4.1,
-        4: 4.4,
-        5: 4.7
-    };
-
-    const multiplier = levelToMultiplier[level];
-    const radius = multiplier * 30;
-
-    const x = event.clientX - gridContainer.getBoundingClientRect().left;
-    const y = event.clientY - gridContainer.getBoundingClientRect().top;
-
-    clearEarthquakeCircle();
-
+    function createCircle(left, top) {
     const circle = document.createElement('div');
-    circle.classList.add('earthquake-circle');
-    circle.style.width = `${radius * 2}px`;
-    circle.style.height = `${radius * 2}px`;
+    circle.classList.add('giant-arrow-circle');
+    circle.style.width = '30px';
+    circle.style.height = '30px';
     circle.style.borderRadius = '50%';
     circle.style.position = 'absolute';
-    circle.style.left = `${x - radius}px`;
-    circle.style.top = `${y - radius}px`;
-    circle.style.border = '1px solid red';
-    circle.style.pointerEvents = 'none';
+    circle.style.left = `${left}px`;
+    circle.style.top = `${top}px`;
+    circle.style.backgroundColor = 'blue'; // Set your desired circle color
+    circle.style.cursor = 'move';
+    return circle;
+    }
 
-    gridContainer.appendChild(circle);
+    function drawLine(circle1, circle2) {
+    const svg = document.getElementById('lineContainer');
+    const mainLine = document.getElementById('connectorLine'); // This is your main visible line
+    // Create side lines for computational purposes but make them invisible
+    const sideLine1 = document.getElementById('sideLine1');
+    const sideLine2 = document.getElementById('sideLine2');
 
-    // Loop through all the squares and check if they are within the radius and occupied
+    svg.appendChild(sideLine1);
+    svg.appendChild(sideLine2);
+
+    // Calculate centers of the circles
+    const rect1 = circle1.getBoundingClientRect();
+    const rect2 = circle2.getBoundingClientRect();
+    const x1 = rect1.left + rect1.width / 2 - svg.getBoundingClientRect().left;
+    const y1 = rect1.top + rect1.height / 2 - svg.getBoundingClientRect().top;
+    const x2 = rect2.left + rect2.width / 2 - svg.getBoundingClientRect().left;
+    const y2 = rect2.top + rect2.height / 2 - svg.getBoundingClientRect().top;
+
+    // Set coordinates for the main line
+    mainLine.setAttribute('x1', x1);
+    mainLine.setAttribute('y1', y1);
+    mainLine.setAttribute('x2', x2);
+    mainLine.setAttribute('y2', y2);
+
+    // Set the line's width to the diameter of the circles
+    const diameter = rect1.width; // Assuming both circles have the same size
+    mainLine.setAttribute('stroke-width', diameter);
+
+    // Calculate offset for side lines based on the line width
+    const lineWidth = 30; // Width of your arrow line
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const offsetX = Math.sin(angle) * lineWidth / 2;
+    const offsetY = Math.cos(angle) * lineWidth / 2;
+
+    // Set coordinates for side lines (tangent to the main line and invisible)
+    sideLine1.setAttribute('x1', x1 + offsetX);
+    sideLine1.setAttribute('y1', y1 - offsetY);
+    sideLine1.setAttribute('x2', x2 + offsetX);
+    sideLine1.setAttribute('y2', y2 - offsetY);
+    sideLine1.setAttribute('stroke-opacity', '0');
+
+    sideLine2.setAttribute('x1', x1 - offsetX);
+    sideLine2.setAttribute('y1', y1 + offsetY);
+    sideLine2.setAttribute('x2', x2 - offsetX);
+    sideLine2.setAttribute('y2', y2 + offsetY);
+    sideLine2.setAttribute('stroke-opacity', '0');
+
+    // Use the side lines for intersection checks
+    highlightCellsIntersectingWithLine(mainLine);
+    highlightCellsIntersectingWithLine(sideLine1);
+    highlightCellsIntersectingWithLine(sideLine2);
+    updateIntersectedCells();
+    }
+
+
+    function clearGiantArrow() {
+    // Remove circles
+    const existingCircles = gridContainer.querySelectorAll('.giant-arrow-circle');
+    existingCircles.forEach(circle => {
+        gridContainer.removeChild(circle);
+    });
+
+    // Clear line by resetting its attributes
+    const line = document.getElementById('connectorLine');
+    if (line) {
+        line.setAttribute('x1', '0');
+        line.setAttribute('y1', '0');
+        line.setAttribute('x2', '0');
+        line.setAttribute('y2', '0');
+    }
+
     const squares = document.querySelectorAll('.square');
     squares.forEach(square => {
-        const squareX = square.offsetLeft;
-        const squareY = square.offsetTop;
-
-        // Calculate the distances from each corner of the cell to the center of the circle
-        const distances = [
-            Math.sqrt(Math.pow(squareX - x, 2) + Math.pow(squareY - y, 2)), // Top-left corner
-            Math.sqrt(Math.pow(squareX + square.offsetWidth - x, 2) + Math.pow(squareY - y, 2)), // Top-right corner
-            Math.sqrt(Math.pow(squareX - x, 2) + Math.pow(squareY + square.offsetHeight - y, 2)), // Bottom-left corner
-            Math.sqrt(Math.pow(squareX + square.offsetWidth - x, 2) + Math.pow(squareY + square.offsetHeight - y, 2)) // Bottom-right corner
-        ];
-
-        // Check if any distance is less than the radius
-        const isInsideCircle = distances.some(distance => distance < radius);
-
-        // If any corner is inside the circle, consider the cell to be inside the circle
-        if (isInsideCircle) {
-            const squareIndex = Array.from(square.parentNode.children).indexOf(square);
-            const cellX = squareIndex % 25;
-            const cellY = Math.floor(squareIndex / 25);
-            const isOccupied = occupiedCells.some(cell => cell.x === cellX && cell.y === cellY);
-
-            if (isOccupied) {
-                square.style.backgroundColor = 'rgba(255, 0, 0, 0.75)';
-            }
-        }
-    });
-}
-
-function clearEarthquakeCircle() {
-    const existingCircle = gridContainer.querySelector('.earthquake-circle');
-    if (existingCircle) {
-        gridContainer.removeChild(existingCircle);
-
-        // Loop through all the squares and reset highlighted cells
-        const squares = document.querySelectorAll('.square');
-        squares.forEach(square => {
             if (square.style.backgroundColor === 'rgba(255, 0, 0, 0.75)') {
                 square.style.backgroundColor = 'rgb(255, 255, 125)';
             }
+    });
+    }
+
+    function makeDraggable(element) {
+    element.addEventListener('mousedown', function(event) {
+        event.preventDefault(); // Prevent default text selection
+
+        // Calculate initial offsets within the element
+        const initialOffsetX = event.clientX - element.getBoundingClientRect().left;
+        const initialOffsetY = event.clientY - element.getBoundingClientRect().top;
+
+        // Function to handle moving the element
+    const moveElement = (moveEvent) => {
+    const gridRect = gridContainer.getBoundingClientRect(); // Get the bounding rect of the grid container
+
+    // Calculate new positions, adjusted for the grid container's offset
+    let newX = moveEvent.clientX - initialOffsetX - gridRect.left + window.scrollX; // Add scrollX for horizontal scrolling
+    let newY = moveEvent.clientY - initialOffsetY - gridRect.top + window.scrollY; // Add scrollY for vertical scrolling
+
+    // Ensure newX and newY are within the grid boundaries
+    // Limit newX to be between 0 and the width of the grid minus the width of the element
+    newX = Math.max(-1, Math.min(newX, gridRect.width - element.offsetWidth + 1));
+    // Limit newY to be between 0 and the height of the grid minus the height of the element
+    newY = Math.max(-1, Math.min(newY, gridRect.height - element.offsetHeight + 1));
+
+    // Update the element's position
+    element.style.left = `${newX}px`;
+    element.style.top = `${newY}px`;
+
+    if (circle1 && circle2) {
+        drawLine(circle1, circle2);
+    }
+    };
+
+
+        // Attach move event listener
+        document.addEventListener('mousemove', moveElement);
+
+        // Function to cleanup and remove event listeners
+        const stopDrag = () => {
+            document.removeEventListener('mousemove', moveElement);
+            document.removeEventListener('mouseup', stopDrag);
+        };
+
+        // Attach event listener for mouseup to stop the drag
+        document.addEventListener('mouseup', stopDrag);
+    });
+
+    // Prevent the default drag-and-drop behavior
+    element.ondragstart = () => false;
+    }
+
+    function highlightCellsIntersectingWithLine(line) {
+    const grid = document.getElementById('grid-container');
+    const gridRect = grid.getBoundingClientRect();
+    const x1 = parseFloat(line.getAttribute('x1'));
+    const y1 = parseFloat(line.getAttribute('y1'));
+    const x2 = parseFloat(line.getAttribute('x2'));
+    const y2 = parseFloat(line.getAttribute('y2'));
+    const isVertical = (x1 === x2);
+
+    let m, b; // Slope and y-intercept of the line
+        if (!isVertical) {
+            m = (y2 - y1) / (x2 - x1);
+            b = y1 - m * x1;
+        }
+
+        // Check each occupied cell for intersection
+        occupiedCells.forEach(cell => {
+            const cellIndex = cell.y * 25 + cell.x; // Assuming 25 columns
+            const cellElement = document.querySelector(`#grid-container .square:nth-child(${cellIndex + 1})`);
+
+            if (cellElement) {
+                const cellRect = cellElement.getBoundingClientRect();
+                const cellX = cellRect.left - gridRect.left;
+                const cellY = cellRect.top - gridRect.top;
+
+                // Calculate the cell's corner positions
+                const topLeft = { x: cellX, y: cellY };
+                const bottomRight = { x: cellX + 30, y: cellY + 30 }; // Assuming cell size of 30px
+
+                let intersects = false;
+
+                if (isVertical) {
+                    // Check if the vertical line's x-coordinate is within the cell's x-range
+                    if (x1 >= topLeft.x && x1 <= bottomRight.x) {
+                        // Check if any part of the vertical line's y-range intersects with the cell's y-range
+                        const lineTop = Math.min(y1, y2); // Line's topmost y-coordinate
+                        const lineBottom = Math.max(y1, y2); // Line's bottommost y-coordinate
+                        intersects = lineBottom >= topLeft.y && lineTop <= bottomRight.y;
+                    }
+                } else {
+                    // Non-vertical line intersection checks
+                    intersects = checkLineIntersection(x1, y1, x2, y2, topLeft.x, topLeft.y, bottomRight.x, topLeft.y) ||
+                                checkLineIntersection(x1, y1, x2, y2, bottomRight.x, topLeft.y, bottomRight.x, bottomRight.y) ||
+                                checkLineIntersection(x1, y1, x2, y2, bottomRight.x, bottomRight.y, topLeft.x, bottomRight.y) ||
+                                checkLineIntersection(x1, y1, x2, y2, topLeft.x, bottomRight.y, topLeft.x, topLeft.y);
+                }
+
+                if (intersects) {
+                    intersectedCells.add(cellIndex); // Add the cell index to the intersectedCells collection
+                }
+            }
         });
     }
-}
 
-function showLightningHighlight(event) {
-    if (!isLightningMode) return;
+    // Helper function to check if two line segments intersect
+    function checkLineIntersection(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY) {
+    // Calculate the direction of the lines
+    const uA = ((line2EndX - line2StartX) * (line1StartY - line2StartY) - (line2EndY - line2StartY) * (line1StartX - line2StartX)) / ((line2EndY - line2StartY) * (line1EndX - line1StartX) - (line2EndX - line2StartX) * (line1EndY - line1StartY));
+    const uB = ((line1EndX - line1StartX) * (line1StartY - line2StartY) - (line1EndY - line1StartY) * (line1StartX - line2StartX)) / ((line2EndY - line2StartY) * (line1EndX - line1StartX) - (line2EndX - line2StartX) * (line1EndY - line1StartY));
 
-    const offsetX = event.clientX - gridContainer.offsetLeft;
-    const offsetY = event.clientY - gridContainer.offsetTop;
+    // If uA and uB are between 0-1, lines are colliding
+    return uA >= 0 && uA <= 1 && uB >= 0 && uB <= 1;
+    }
 
-    const centerX = Math.floor(offsetX / 30);
-    const centerY = Math.floor(offsetY / 30);
 
-    const startCellX = Math.max(centerX - 2, 0);
-    const startCellY = Math.max(centerY - 2, 0);
-    const endCellX = Math.min(centerX + 2, 24);
-    const endCellY = Math.min(centerY + 2, 24);
+    // After all lines have been checked, update the cell colors
+    function updateIntersectedCells() {
+    const cells = document.querySelectorAll('#grid-container .square');
 
-    clearLightningHighlight(); // Clear previous lightning highlight
+    // Iterate through all occupied cells
+    occupiedCells.forEach(oc => {
+        const index = oc.y * 25 + oc.x; // Calculate cell index based on its x and y coordinates
+        const cell = cells[index];
 
-    for (let i = startCellY; i <= endCellY; i++) {
-        for (let j = startCellX; j <= endCellX; j++) {
-            if ((i === startCellY || i === endCellY) && (j === startCellX || j === endCellX)) continue; // Skip corner cells
+        // If this occupied cell is not in the set of currently intersected cells, revert its color
+        if (!intersectedCells.has(index)) {
+            cell.style.backgroundColor = 'rgb(255, 255, 125)';
+        }
+    });
 
-            const index = i * 25 + j;
-            const square = gridContainer.querySelector(`.square:nth-child(${index + 1})`);
-            square.style.border = '3px solid blue'; // Highlight border
-            if (occupiedCells.some(cell => cell.x === j && cell.y === i)) {
-                square.style.backgroundColor = 'rgba(255, 0, 0, 0.75)';
-                square.style.border = "";
+    // Iterate through all intersected cells to update their color
+    intersectedCells.forEach(index => {
+        const cell = cells[index];
+        cell.style.backgroundColor = 'rgba(255, 0, 0, 0.75)';
+    });
+
+    // Clear the set for future updates
+    intersectedCells.clear();
+    }
+
+    function showEarthquakeCircle(event) {
+        const levelSelect = document.getElementById('earthquake-level');
+        const level = parseInt(levelSelect.value);
+
+        const levelToMultiplier = {
+            1: 3.5,
+            2: 3.8,
+            3: 4.1,
+            4: 4.4,
+            5: 4.7
+        };
+
+        const multiplier = levelToMultiplier[level];
+        const radius = multiplier * 30;
+
+        const x = event.clientX - gridContainer.getBoundingClientRect().left;
+        const y = event.clientY - gridContainer.getBoundingClientRect().top;
+
+        clearEarthquakeCircle();
+
+        const circle = document.createElement('div');
+        circle.classList.add('earthquake-circle');
+        circle.style.width = `${radius * 2}px`;
+        circle.style.height = `${radius * 2}px`;
+        circle.style.borderRadius = '50%';
+        circle.style.position = 'absolute';
+        circle.style.left = `${x - radius}px`;
+        circle.style.top = `${y - radius}px`;
+        circle.style.border = '1px solid red';
+        circle.style.pointerEvents = 'none';
+
+        gridContainer.appendChild(circle);
+
+        // Loop through all the squares and check if they are within the radius and occupied
+        const squares = document.querySelectorAll('.square');
+        squares.forEach(square => {
+            const squareX = square.offsetLeft;
+            const squareY = square.offsetTop;
+
+            // Calculate the distances from each corner of the cell to the center of the circle
+            const distances = [
+                Math.sqrt(Math.pow(squareX - x, 2) + Math.pow(squareY - y, 2)), // Top-left corner
+                Math.sqrt(Math.pow(squareX + square.offsetWidth - x, 2) + Math.pow(squareY - y, 2)), // Top-right corner
+                Math.sqrt(Math.pow(squareX - x, 2) + Math.pow(squareY + square.offsetHeight - y, 2)), // Bottom-left corner
+                Math.sqrt(Math.pow(squareX + square.offsetWidth - x, 2) + Math.pow(squareY + square.offsetHeight - y, 2)) // Bottom-right corner
+            ];
+
+            // Check if any distance is less than the radius
+            const isInsideCircle = distances.some(distance => distance < radius);
+
+            // If any corner is inside the circle, consider the cell to be inside the circle
+            if (isInsideCircle) {
+                const squareIndex = Array.from(square.parentNode.children).indexOf(square);
+                const cellX = squareIndex % 25;
+                const cellY = Math.floor(squareIndex / 25);
+                const isOccupied = occupiedCells.some(cell => cell.x === cellX && cell.y === cellY);
+
+                if (isOccupied) {
+                    square.style.backgroundColor = 'rgba(255, 0, 0, 0.75)';
+                }
+            }
+        });
+    }
+
+    function clearEarthquakeCircle() {
+        const existingCircle = gridContainer.querySelector('.earthquake-circle');
+        if (existingCircle) {
+            gridContainer.removeChild(existingCircle);
+
+            // Loop through all the squares and reset highlighted cells
+            const squares = document.querySelectorAll('.square');
+            squares.forEach(square => {
+                if (square.style.backgroundColor === 'rgba(255, 0, 0, 0.75)') {
+                    square.style.backgroundColor = 'rgb(255, 255, 125)';
+                }
+            });
+        }
+    }
+
+    function showLightningHighlight(event) {
+        if (!isLightningMode) return;
+
+        const offsetX = event.clientX - gridContainer.offsetLeft;
+        const offsetY = event.clientY - gridContainer.offsetTop;
+
+        const centerX = Math.floor(offsetX / 30);
+        const centerY = Math.floor(offsetY / 30);
+
+        const startCellX = Math.max(centerX - 2, 0);
+        const startCellY = Math.max(centerY - 2, 0);
+        const endCellX = Math.min(centerX + 2, 24);
+        const endCellY = Math.min(centerY + 2, 24);
+
+        clearLightningHighlight(); // Clear previous lightning highlight
+
+        for (let i = startCellY; i <= endCellY; i++) {
+            for (let j = startCellX; j <= endCellX; j++) {
+                if ((i === startCellY || i === endCellY) && (j === startCellX || j === endCellX)) continue; // Skip corner cells
+
+                const index = i * 25 + j;
+                const square = gridContainer.querySelector(`.square:nth-child(${index + 1})`);
+                square.style.border = '3px solid blue'; // Highlight border
+                if (occupiedCells.some(cell => cell.x === j && cell.y === i)) {
+                    square.style.backgroundColor = 'rgba(255, 0, 0, 0.75)';
+                    square.style.border = "";
+                }
             }
         }
     }
-}
 
 
-function clearLightningHighlight() {
+    function clearLightningHighlight() {
         const squares = gridContainer.querySelectorAll('.square');
         squares.forEach(square => {
             square.style.border = "";
@@ -585,6 +614,74 @@ function clearLightningHighlight() {
         });
     }
 
+    function showCenterSpellCircle(event) {
+        let multiplier;
+        if (isFreezeMode === true) {
+            multiplier = 3.5;
+        } else if (isOvergrowthMode === true) {
+            multiplier = 7;
+        }
+        
+        const radius = multiplier * 30;
+        const centerX = event.clientX - gridContainer.getBoundingClientRect().left;
+        const centerY = event.clientY - gridContainer.getBoundingClientRect().top;
+    
+        clearCenterSpellCircle(); // Reset previously drawn circle and highlighted cells
+    
+        // Draw the visual circle for the spell effect
+        const circle = document.createElement('div');
+        circle.classList.add('CenterSpell-circle');
+        circle.style.width = `${radius * 2}px`;
+        circle.style.height = `${radius * 2}px`;
+        circle.style.borderRadius = '50%';
+        circle.style.position = 'absolute';
+        circle.style.left = `${centerX - radius}px`;
+        circle.style.top = `${centerY - radius}px`;
+        circle.style.border = '1px solid red';
+        circle.style.pointerEvents = 'none';
+    
+        gridContainer.appendChild(circle);
+    
+        // Iterate over each picture (occupied area) to check if its center is within the circle
+        const pictures = gridContainer.querySelectorAll('.picture');
+        pictures.forEach(picture => {
+            const pictureX = parseInt(picture.style.left, 10) + (parseInt(picture.dataset.areaSize, 10) * 15); // Center X of the picture
+            const pictureY = parseInt(picture.style.top, 10) + (parseInt(picture.dataset.areaSize, 10) * 15); // Center Y of the picture
+            const distanceToCenter = Math.sqrt(Math.pow(pictureX - centerX, 2) + Math.pow(pictureY - centerY, 2));
+    
+            if (distanceToCenter <= radius) {
+                // If the center of the picture is within the circle, change the color of its occupied cells
+                for (let i = 0; i < parseInt(picture.dataset.areaSize, 10); i++) {
+                    for (let j = 0; j < parseInt(picture.dataset.areaSize, 10); j++) {
+                        const cellX = (parseInt(picture.style.left, 10) / 30) + j;
+                        const cellY = (parseInt(picture.style.top, 10) / 30) + i;
+                        const squareIndex = cellY * 25 + cellX; // Assuming 25 columns
+                        const square = gridContainer.querySelector(`.square:nth-child(${squareIndex + 1})`);
+    
+                        if (square && occupiedCells.some(cell => cell.x === cellX && cell.y === cellY)) {
+                            square.style.backgroundColor = "rgba(255, 0, 0, 0.75)";
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+
+    function clearCenterSpellCircle() {
+        const existingCircle = gridContainer.querySelector('.CenterSpell-circle');
+        if (existingCircle) {
+            gridContainer.removeChild(existingCircle);
+
+            // Loop through all the squares and reset highlighted cells
+            const squares = document.querySelectorAll('.square');
+            squares.forEach(square => {
+                if (square.style.backgroundColor === 'rgba(255, 0, 0, 0.75)') {
+                    square.style.backgroundColor = 'rgb(255, 255, 125)';
+                }
+            });
+        }
+    }
     
     function startDrag(event) {
         if (!isMoveMode) return;
